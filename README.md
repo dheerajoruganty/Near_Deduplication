@@ -2,10 +2,12 @@
 
 
 ## Environment Setup:
-    We will be using a Conda Environment, with Python 3.10. Requirements for these are as below.
-```{bash}
-    conda create --name five-guys -y python=3.10 ipykernel
-    source activate five-guys;
-    pip install -e .
-```
+
+We will be using a Conda Environment, with Python 3.10. Requirements for these are as below.
+
+    ```{bash}
+        conda create --name five-guys -y python=3.10 ipykernel
+        source activate five-guys;
+        pip install -e .
+    ```
 
