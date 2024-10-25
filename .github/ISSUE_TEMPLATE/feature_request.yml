@@ -3,7 +3,7 @@ name: "Feature request"
 description: "Suggest an idea for this project"
 title: "Feature Request: [your idea]"
 labels: enhancement
-assignees: ''
+assignees: 'dheerajoruganty'
 
 body:
   - type: markdown
