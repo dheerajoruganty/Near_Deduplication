@@ -1,6 +1,6 @@
 # .github/ISSUE_TEMPLATE/bug_report.yml
-name: Bug report
-description: Create a report to help us improve
+name: "Bug report"
+description: "Create a report to help us improve"
 title: "Bug: [describe the bug]"
 labels: bug
 assignees: ''
@@ -9,36 +9,39 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please fill out the following to help us investigate the issue.
+        **Please describe the bug you're encountering in detail.**
 
   - type: textarea
     id: description
     attributes:
-      label: Description
-      description: Describe the bug you encountered
-      placeholder: Explain the problem here...
+      label: "Description"
+      description: "Provide a concise description of the bug."
+      placeholder: "What is the bug?"
 
   - type: textarea
     id: steps
     attributes:
-      label: Steps to reproduce
-      description: Provide step-by-step instructions to reproduce the bug
-      placeholder: Step 1, Step 2...
+      label: "Steps to reproduce"
+      description: "Please list the steps to reproduce the bug."
+      placeholder: "Step 1, Step 2..."
 
-  - type: input
+  - type: textarea
     id: expected
     attributes:
-      label: Expected behavior
-      description: What did you expect to happen?
+      label: "Expected behavior"
+      description: "Describe what you expected to happen."
+      placeholder: "Expected behavior"
 
-  - type: input
+  - type: textarea
     id: actual
     attributes:
-      label: Actual behavior
-      description: What happened instead?
+      label: "Actual behavior"
+      description: "Describe what actually happened."
+      placeholder: "Actual behavior"
 
   - type: textarea
     id: logs
     attributes:
-      label: Logs
-      description: If applicable, add any relevant logs here
+      label: "Relevant logs"
+      description: "Include any relevant logs or screenshots that might help us diagnose the problem."
+      placeholder: "Paste logs here"
