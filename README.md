@@ -1,5 +1,41 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/SVDBZgP4)
+# near_dedup
 
+
+<p align="center">
+<a href="https://pypi.python.org/pypi/near_dedup">
+    <img src="https://img.shields.io/pypi/v/near_dedup.svg"
+        alt = "Release Status">
+</a>
+
+<a href="https://github.com/dheerajoruganty/near_dedup/actions">
+    <img src="https://github.com/dheerajoruganty/near_dedup/actions/workflows/main.yml/badge.svg?branch=release" alt="CI Status">
+</a>
+
+<a href="https://dheerajoruganty.github.io/near_dedup/">
+    <img src="https://img.shields.io/website/https/dheerajoruganty.github.io/near_dedup/index.html.svg?label=docs&down_message=unavailable&up_message=available" alt="Documentation Status">
+</a>
+
+<a href="https://pyup.io/repos/github/dheerajoruganty/near_dedup/">
+<img src="https://pyup.io/repos/github/dheerajoruganty/near_dedup/shield.svg" alt="Updates">
+</a>
+
+</p>
+
+
+few basic experiments for the Bloom filter and use LSH for the near
+
+
+* Free software: MIT
+* Documentation: <https://dheerajoruganty.github.io/near_dedup/>
+
+
+## Features
+
+* TODO
+
+## Credits
+
+This package was created with the [ppw](https://zillionare.github.io/python-project-wizard) tool. For more information, please visit the [project page](https://zillionare.github.io/python-project-wizard/).
 
 ## Environment Setup:
 
