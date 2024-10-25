@@ -10,7 +10,7 @@ body:
     attributes:
       value: "## Feature Request"
 
-  - type: input
+  - type: textarea
     id: feature_description
     attributes:
       label: "Feature Description"
@@ -18,15 +18,8 @@ body:
       placeholder: "Describe the feature in detail."
 
   - type: textarea
-    id: use_case
+    id: Tasks
     attributes:
-      label: "Use case"
-      description: "What will you use this feature for?"
-      placeholder: "Explain the context in which the feature will be used."
-
-  - type: input
-    id: benefits
-    attributes:
-      label: "Benefits"
-      description: "How will this feature improve the project?"
-      placeholder: "Describe the benefits of this feature."
+      label: "Tasks"
+      description: "What tasks to perform"
+      placeholder: "Describe the tasks that are needed to be performed"
