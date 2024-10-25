@@ -1,0 +1,44 @@
+# .github/ISSUE_TEMPLATE/bug_report.yml
+name: Bug report
+description: Create a report to help us improve
+title: "Bug: [describe the bug]"
+labels: bug
+assignees: ''
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out the following to help us investigate the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the bug you encountered
+      placeholder: Explain the problem here...
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide step-by-step instructions to reproduce the bug
+      placeholder: Step 1, Step 2...
+
+  - type: input
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+
+  - type: input
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: If applicable, add any relevant logs here

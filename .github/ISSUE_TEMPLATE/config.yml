@@ -1,0 +1,9 @@
+# .github/ISSUE_TEMPLATE/config.yml
+blank_issues_enabled: false
+contact_links:
+  - name: Bug Report
+    url: https://github.com/DSAN6700-24Fall/assignment-2-five-guys/issues/new?assignees=&labels=bug&template=bug_report.yml&title=Bug%3A+Your+Title
+    about: Report a bug or unexpected behavior
+  - name: Feature Request
+    url: https://github.com/DSAN6700-24Fall/assignment-2-five-guys/issues/new?assignees=&labels=enhancement&template=feature_request.yml&title=Feature+Request%3A+Your+Title
+    about: Suggest a new feature or enhancement
