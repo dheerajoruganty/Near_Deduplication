@@ -97,17 +97,17 @@ jobs:
           # Install dependencies with extras
           poetry install -E doc
 
-          # Use poetry's virtual environment to run mkdocs
+          # Build the documentation with mkdocs
           poetry run mkdocs build
 
-          # Configure git user for deployment
-          git config --global user.name dheerajoruganty
-          git config --global user.email db2winfb@gmail.com
+          # Configure git with GitHub token for authentication
+          git config --global user.name "Docs deploy"
+          git config --global user.email "docs@dummy.bot.com"
+          git remote set-url origin https://${GH_TOKEN}@github.com/${{ github.repository }}.git
 
-          # Use poetry to run mike commands in the virtual environment
+          # Deploy with mike
           poetry run mike deploy -p -f --ignore "`poetry version --short`.dev"
           poetry run mike set-default -p "`poetry version --short`.dev"
-
 
       - name: Build wheels and source tarball
         run: |
