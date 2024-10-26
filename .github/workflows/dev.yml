@@ -91,6 +91,8 @@ jobs:
           pip install poetry tox tox-gh-actions
 
       - name: Build documentation
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           # Install dependencies with extras
           poetry install -E doc
