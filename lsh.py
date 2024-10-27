@@ -80,3 +80,31 @@ class LSH:
                 for j in range(i + 1, len(bucket_docs)):
                     candidate_pairs.add((bucket_docs[i], bucket_docs[j]))
         return list(candidate_pairs)
+    
+from union_find import UnionFind
+
+class LSHWithUnionFind(LSH):
+    """
+    Extended LSH with Union-Find for clustering.
+    """
+
+    def __init__(self, num_bands: int, rows_per_band: int, num_hashes: int):
+        super().__init__(num_bands, rows_per_band, num_hashes)
+        self.uf = UnionFind()
+
+    def cluster_candidates(self) -> dict:
+        """
+        Cluster candidate pairs using Union-Find to deduplicate documents.
+        @return: Dictionary with clusters as lists of document IDs
+        """
+        candidate_pairs = self.find_candidates()
+        for doc1, doc2 in candidate_pairs:
+            self.uf.add(doc1)
+            self.uf.add(doc2)
+            self.uf.union(doc1, doc2)
+
+        clusters = defaultdict(list)
+        for doc_id in self.uf.parent:
+            root = self.uf.find(doc_id)
+            clusters[root].append(doc_id)
+        return clusters
