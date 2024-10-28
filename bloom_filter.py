@@ -19,8 +19,11 @@ class BloomFilter:
         self.k = int(self.m * math.log(2)/self.n)
         #number of bytes required to store size max number of elements
         self.n_bytes = (n + 7) // 8
-        self.bit_vector = bytearray(([0] * self.n_bytes))
-        #self.bit_array = bitarray(self.n_bytes * 8)
+        
+        #self.bit_vector = bytearray(([0] * self.n_bytes))
+        #print(len(self.bit_vector))
+        self.bit_array = bitarray(self.n_bytes * 8)
+        
         
     def add(self,item):
         """Adds an item into the bloom filter.
@@ -33,12 +36,16 @@ class BloomFilter:
             for n in range(1,4):
                 n_grams = ngrams(tokens, n)
                 for piece in n_grams:
-                    index = mmh3.hash(" ".join(piece), i) % self.m
-                    #commented out code is the bitarray implementation
-                    byte_index, bit_index = divmod(index, 8) #returns q, r
-                    mask = 1 << bit_index
-                    self.bit_vector[byte_index] |= mask
-                    #self.bit_array[index] = 1
+                    index = mmh3.hash(" ".join(piece), i) % self.m % len(self.bit_array)
+                    #commented out code is the byte array implementation. 
+                    #kept it in because I was trying out both and switching between them.
+                    #byte_index, bit_index = divmod(index, 8) #returns q, r
+                    #print(byte_index)
+                    #print(bit_index)
+                    #mask = 1 << bit_index
+                    #print(len(self.bit_vector))
+                    #self.bit_vector[byte_index] |= mask
+                    self.bit_array[index] = 1
             
             
             
@@ -55,14 +62,15 @@ class BloomFilter:
             for n in range(1,4):
                 n_grams = ngrams(tokens, n)
                 for piece in n_grams:
-                    index = mmh3.hash(" ".join(piece), i) % self.m
-                    #commented out code is the bitarray implementation
-                    byte_index, bit_index = divmod(index, 8) #returns q, r
-                    mask = 1 << bit_index
-                    if (self.bit_vector[byte_index] & mask) == 0:
-                        return False
-                    #if self.bit_array[index] == 0:
+                    index = mmh3.hash(" ".join(piece), i) % self.m % len(self.bit_array)
+                    #commented out code is the byte array implementation
+                    #kept it in because I was trying out both and switching between them.
+                    #byte_index, bit_index = divmod(index, 8) #returns q, r
+                    #mask = 1 << bit_index
+                    #if (self.bit_vector[byte_index] & mask) == 0:
                     #    return False
+                    if self.bit_array[index] == 0:
+                        return False
                 return True
             
             
