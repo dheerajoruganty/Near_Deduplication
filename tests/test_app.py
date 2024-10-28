@@ -21,7 +21,7 @@ def test_content(response):
     # assert 'GitHub' in BeautifulSoup(response.content).title.string
     del response
 
-'''
+
 def test_very_basic_bf():
     docs = ["Hello", "Yes", "Hello"]
     bf = bloom_filter.BloomFilter(n=10, f=0.02)
@@ -33,7 +33,7 @@ def test_very_basic_bf():
     assert bf.query(docs[1])
     assert bf.query(docs[2])
     assert not bf.query("no")
-'''
+
 
 def test_basic_bf():
     
@@ -48,3 +48,16 @@ def test_basic_bf():
     #assert bf.query("THIS FILE SHOULDNT BE QUERIED")
     #assert bf.query("CHEESEBURGERZ IN PARADISE")
 
+def test_numbers_bf():
+    
+    bf = bloom_filter.BloomFilter(10, 0.01)
+    bf.add("1")
+    bf.add("2")
+    bf.add("42")
+    
+    assert bf.query("1")
+    assert bf.query("2")
+    #assert bf.query("3")
+    assert bf.query("42")
+    #assert not bf.query("43")
+    
