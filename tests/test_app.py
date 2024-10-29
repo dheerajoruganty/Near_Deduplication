@@ -41,12 +41,13 @@ def test_basic_bf():
     
     with open('tests/basic_test_example_files.txt') as topo_file:
         for line in topo_file:
+            print(line)
             bf.add(line)
     
     assert bf.query("TWO CHERRY PUMPKIN TARTS")
     assert bf.query("CHEESEBURGER EN PARADISE")
-    #assert bf.query("THIS FILE SHOULDNT BE QUERIED")
-    #assert bf.query("CHEESEBURGERZ IN PARADISE")
+    assert not bf.query("THIS FILE SHOULDNT BE QUERIED")
+    assert not bf.query("CHEESEBURGERZ IN PARADISE")
 
 def test_numbers_bf():
     
@@ -57,7 +58,7 @@ def test_numbers_bf():
     
     assert bf.query("1")
     assert bf.query("2")
-    #assert bf.query("3")
+    assert not bf.query("3")
     assert bf.query("42")
-    #assert not bf.query("43")
+    assert not bf.query("43")
     

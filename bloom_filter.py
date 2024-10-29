@@ -17,12 +17,16 @@ class BloomFilter:
         self.f = f
         self.m = int(-math.log(self.f) * self.n/(math.log(2)**2))
         self.k = int(self.m * math.log(2)/self.n)
+        #self.k = 8
         #number of bytes required to store size max number of elements
-        self.n_bytes = (n + 7) // 8
-        
+        self.m_bytes = (self.m + 7) // 8
+        self.bit_array = bitarray(self.m)
+        self.bit_array.setall(0)
         #self.bit_vector = bytearray(([0] * self.n_bytes))
         #print(len(self.bit_vector))
-        self.bit_array = bitarray(self.n_bytes * 8)
+        #for counting bloom filter
+        #self.bits = [0] * self.m
+        
         
         
     def add(self,item):
@@ -33,10 +37,13 @@ class BloomFilter:
         """
         for i in range(self.k):
             tokens = item.lower().split()
+            
             for n in range(1,4):
                 n_grams = ngrams(tokens, n)
+                
                 for piece in n_grams:
-                    index = mmh3.hash(" ".join(piece), i) % self.m % len(self.bit_array)
+                    
+                    index = mmh3.hash(" ".join(piece), i) % self.m 
                     #commented out code is the byte array implementation. 
                     #kept it in because I was trying out both and switching between them.
                     #byte_index, bit_index = divmod(index, 8) #returns q, r
@@ -45,7 +52,10 @@ class BloomFilter:
                     #mask = 1 << bit_index
                     #print(len(self.bit_vector))
                     #self.bit_vector[byte_index] |= mask
+                    
                     self.bit_array[index] = 1
+                    #for counting bloom filter
+                    #self.bits[index] += 1
             
             
             
@@ -62,7 +72,7 @@ class BloomFilter:
             for n in range(1,4):
                 n_grams = ngrams(tokens, n)
                 for piece in n_grams:
-                    index = mmh3.hash(" ".join(piece), i) % self.m % len(self.bit_array)
+                    index = mmh3.hash(" ".join(piece), i) % self.m
                     #commented out code is the byte array implementation
                     #kept it in because I was trying out both and switching between them.
                     #byte_index, bit_index = divmod(index, 8) #returns q, r
@@ -73,4 +83,15 @@ class BloomFilter:
                         return False
                 return True
             
+    def remove(self, item):
+        for i in range(self.k):
             
+            tokens = item.lower().split()
+            for n in range(1,4):
+                n_grams = ngrams(tokens, n)
+                for piece in n_grams:
+                    index = mmh3.hash(" ".join(piece), i) % self.m
+                    
+                    if self.bit_array[index] > 0:
+                        self.bit_array[index] -= 1
+                
