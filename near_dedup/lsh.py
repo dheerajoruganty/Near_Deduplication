@@ -81,7 +81,7 @@ class LSH:
                     candidate_pairs.add((bucket_docs[i], bucket_docs[j]))
         return list(candidate_pairs)
     
-from union_find import UnionFind
+from near_dedup.union_find import UnionFind
 
 class LSHWithUnionFind(LSH):
     """
