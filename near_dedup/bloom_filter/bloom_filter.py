@@ -1,50 +1,80 @@
-import math
-import mmh3
-from nltk import ngrams
+import hashlib
 from bitarray import bitarray
+import math
+
 
 class BloomFilter:
-    def __init__(self, n: int, f: float):
-        """
-        Creates a Bloom Filter object.
+    """
+    Bloom Filter for approximate membership checking.
+    """
 
-        Args:
-            n (int): max number of elements
-            f (float): desired false positive rate
+    def __init__(self, num_elements: int, false_positive_rate: float = 0.01):
         """
-        self.n = n
-        self.f = f
-        self.m = int(-math.log(self.f) * self.n / (math.log(2) ** 2))
-        self.k = int(self.m * math.log(2) / self.n)
-        self.bit_array = bitarray(self.m)
+        Initialize the Bloom Filter.
+
+        Parameters:
+            num_elements (int): Estimated number of elements to store in the filter.
+            false_positive_rate (float): Desired false positive rate.
+        """
+        self.false_positive_rate = false_positive_rate
+        self.size = self.calculate_size(num_elements, false_positive_rate)
+        self.num_hashes = self.calculate_hash_count(self.size, num_elements)
+        self.bit_array = bitarray(self.size)
         self.bit_array.setall(0)
 
-    def add(self, item):
-        """Adds an item into the bloom filter.
-
-        Args:
-            item (str): Text to be added into the filter.
+    def calculate_size(self, num_elements: int, false_positive_rate: float) -> int:
         """
-        tokens = item.lower().split()
-        for n in range(1, 4):
-            n_grams = ngrams(tokens, n)
-            for piece in n_grams:
-                for i in range(self.k):
-                    index = mmh3.hash(" ".join(piece), i) % self.m
-                    self.bit_array[index] = 1
+        Calculate the size of the bit array.
 
-    def query(self, item):
-        """Determines if an item is in the filter.
+        Parameters:
+            num_elements (int): Number of elements to store.
+            false_positive_rate (float): Desired false positive rate.
 
-        Args:
-            item (str): text to check in the filter.
+        Returns:
+            int: Size of the bit array.
         """
-        tokens = item.lower().split()
-        for n in range(1, 4):
-            n_grams = ngrams(tokens, n)
-            for piece in n_grams:
-                for i in range(self.k):
-                    index = mmh3.hash(" ".join(piece), i) % self.m
-                    if self.bit_array[index] == 0:
-                        return False
+        return int(-num_elements * math.log(false_positive_rate) / (math.log(2) ** 2))
+
+    def calculate_hash_count(self, size: int, num_elements: int) -> int:
+        """
+        Calculate the number of hash functions needed.
+
+        Parameters:
+            size (int): Size of the bit array.
+            num_elements (int): Number of elements to store.
+
+        Returns:
+            int: Number of hash functions.
+        """
+        return int((size / num_elements) * math.log(2))
+
+    def add(self, item: str):
+        """
+        Add an item to the Bloom Filter.
+
+        Parameters:
+            item (str): Item to add.
+        """
+        for i in range(self.num_hashes):
+            digest = (
+                int(hashlib.md5((str(i) + item).encode()).hexdigest(), 16) % self.size
+            )
+            self.bit_array[digest] = 1
+
+    def contains(self, item: str) -> bool:
+        """
+        Check if an item is in the Bloom Filter.
+
+        Parameters:
+            item (str): Item to check.
+
+        Returns:
+            bool: True if the item might be in the filter, False if it is definitely not.
+        """
+        for i in range(self.num_hashes):
+            digest = (
+                int(hashlib.md5((str(i) + item).encode()).hexdigest(), 16) % self.size
+            )
+            if not self.bit_array[digest]:
+                return False
         return True
