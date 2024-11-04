@@ -3,7 +3,7 @@
 # pylint: disable=redefined-outer-name
 
 import pytest
-import near_dedup.bloom_filter as bloom_filter
+import near_dedup.bloom_filter.bloom_filter as bloom_filter
 
 @pytest.fixture
 def response():
