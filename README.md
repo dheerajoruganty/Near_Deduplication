@@ -43,3 +43,11 @@ We will be using a Conda Environment, with Python 3.10. Requirements for these a
         pip install -e .
     ```
 
+# MD5 baseline (exact duplicate detection)
+python main.py --mode baseline --baseline md5 --input_file data/thirty.tsv
+
+# N-Gram baseline
+python main.py --mode baseline --baseline ngram --n 3 --threshold 0.8 --input_file data/thirty.tsv
+
+# Jaccard baseline
+python main.py --mode baseline --baseline jaccard --threshold 0.7 --input_file data/thirty.tsv
