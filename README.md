@@ -145,4 +145,4 @@ For more information, see `AUTHORS.md`.
 
 ---
 
-This README offers an overview of the deduplication project, usage instructions, and details on how to set up the environment and access results. If you have questions, please reach out to any of the contributors.
+Thanks for checking out our project! If you have any questions or run into issues, please reach out to any of the contributors.
