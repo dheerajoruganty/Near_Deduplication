@@ -1,1 +1,10 @@
 data/* filter=lfs diff=lfs merge=lfs -text
+results/100000-baseline.txt filter=lfs diff=lfs merge=lfs -text
+results/300-baseline.txt filter=lfs diff=lfs merge=lfs -text
+results/300-lsh.txt filter=lfs diff=lfs merge=lfs -text
+results/300-union_find_lsh.txt filter=lfs diff=lfs merge=lfs -text
+results/data filter=lfs diff=lfs merge=lfs -text
+results/1000-baseline.txt filter=lfs diff=lfs merge=lfs -text
+results/10000-baseline.txt filter=lfs diff=lfs merge=lfs -text
+results/10000-union_find_lsh.txt filter=lfs diff=lfs merge=lfs -text
+results/1000-union_find_lsh.txt filter=lfs diff=lfs merge=lfs -text
