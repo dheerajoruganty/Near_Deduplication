@@ -20,8 +20,7 @@ The worst-case scenario for LSH in text deduplication occurs when similar docume
 
 ## Improvements and Rationale
 
-### 1. Adjustable Shingle Size
-Following [Mining of Massive Datasets, Sec 3.2.2], we experimented with various shingle sizes (e.g., bigrams, trigrams). Smaller shingles ... 
+LSHImproved class: adaptive shingle size selection. This improvement dynamically adjusts the shingle size for each document based on its length. The idea is that longer documents can have larger shingles, reducing the number of shingles generated while maintaining sufficient representation, whereas shorter documents use smaller shingles.
 
 ### 2. Multi-Probe LSH
 Following [Introduction to Information Retrieval, Sec 3.4.2], we implemented multi-probe LSH. This allowed ...
@@ -55,5 +54,60 @@ Following [Introduction to Information Retrieval, Sec 3.4.2], we implemented mul
 1. **Document Processing**: We normalized the text by ...
 2. **Shingle Size**: Shingle size was set to ...
 
-### Runtime and Memory Analysis
-We used Python's `memory_profiler` library to measure memory usage ... 
+
+## Runtime and Processing Efficiency
+
+To calculate the "Documents Processed per Minute" for each dataset, we use the following formula:
+
+\[
+\text{Documents Processed per Minute} = \frac{\text{Number of Documents}}{\text{Total Time (in minutes)}}
+\]
+
+Given that each of the MD5 baseline runs completed in approximately 1 second, we can compute the documents processed per minute as follows:
+
+---
+
+## Baseline Runtime and Results Summary
+
+### Baseline Approach
+
+The MD5-based baseline deduplication was applied to datasets of various sizes to detect exact duplicates. Below is the summary of the results, including the number of duplicate pairs detected, runtime efficiency, and the calculated documents processed per minute.
+
+| Dataset           | Number of Documents | Total Time (seconds) | Duplicate Pairs Found | Documents Processed per Minute |
+|-------------------|---------------------|-----------------------|------------------------|--------------------------------|
+| `threehundred.tsv` | 289                 | ~1                    | 16                     | 17,340                          |
+| `onek.tsv`         | 996                 | ~1                    | 87                     | 59,760                          |
+| `tenk.tsv`         | 9,995               | ~1                    | 1059                   | 599,700                         |
+
+### Observations
+
+- **Duplicate Detection**: The MD5 hashing approach effectively detected exact duplicates in all datasets, with larger datasets containing more duplicate pairs.
+  
+- **Efficiency**: The MD5-based deduplication processed each dataset very quickly, achieving high throughput rates, as shown in the "Documents Processed per Minute" column. Even for the largest dataset (`tenk.tsv`), it handled nearly 600,000 documents per minute.
+
+- **Scalability**: This baseline implementation is both efficient and highly scalable for exact duplicate detection. However, it cannot detect near-duplicates, which will be addressed by implementing LSH.
+
+
+### LSH Implementation
+
+To evaluate the efficiency of the LSH implementations, we tested the Union-Find LSH method across three datasets of varying sizes. The following table summarizes the runtime for each dataset, including the total time taken, documents processed per minute, and observations on scalability.
+
+| Dataset           | Number of Documents | Start Time           | End Time             | Total Time (minutes) | Documents Processed Per Minute |
+|-------------------|---------------------|----------------------|----------------------|-----------------------|---------------------------------|
+| `threehundred.tsv` | 289                 | 17:36:06             | 17:37:12             | 1.10                  | ~262                             |
+| `onek.tsv`         | 996                 | 17:37:12             | 17:40:59             | 3.78                  | ~263                             |
+| `tenk.tsv`         | 9,995               | 17:41:00             | 18:16:10             | 35.17                 | ~284                             |
+
+### Observations
+
+- **Consistency Across Datasets**: The Union-Find LSH method maintained a fairly consistent processing rate of around 260–280 documents per minute, regardless of the dataset size. This consistency indicates that the method scales linearly with dataset size, which is promising for larger document collections.
+  
+- **Memory Usage**: Memory usage was monitored by using Python’s `memory_profiler` package, which allowed us to track peak memory consumption during processing. As expected, the larger datasets required more memory due to the higher volume of document shingle storage and hash computations. However, with Union-Find optimizations, we minimized redundant memory usage by clustering similar documents efficiently.
+  
+- **Error Analysis**: To evaluate the quality of deduplication, we traced a sample of document clusters back to their raw content. Results show that while most clusters accurately grouped near-duplicates, a few clusters included documents with marginal content overlap. This highlights a potential improvement area for more selective hash functions or adjustable shingle sizes.
+
+This analysis demonstrates that while the Union-Find LSH implementation is effective and scalable, adjustments in hash selection, shingle size, and memory optimization can further enhance its performance and accuracy.
+
+---
+
+This section provides a structured summary of your observations, including runtime data, memory usage insights, and error analysis based on your experiment findings.
