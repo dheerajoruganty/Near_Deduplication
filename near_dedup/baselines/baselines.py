@@ -3,7 +3,6 @@ import logging
 from collections import Counter
 from nltk.util import ngrams
 from near_dedup.bloom_filter.bloom_filter import BloomFilter
-from near_dedup.lsh.lsh import LSH
 from nltk.tokenize import word_tokenize
 import nltk
 

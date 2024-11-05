@@ -45,12 +45,10 @@ class LSH(AbstractLSH):
         )
 
     def shingle_document(self, doc: str) -> Set[str]:
-        shingles = {
+        return {
             doc[i : i + self.shingle_size]
             for i in range(len(doc) - self.shingle_size + 1)
         }
-        logging.debug(f"Generated {len(shingles)} shingles for document.")
-        return shingles
 
     def minhash(self, shingles: Set[str]) -> List[int]:
         signature = []
@@ -62,9 +60,6 @@ class LSH(AbstractLSH):
                 )
                 min_hash = min(min_hash, hash_value)
             signature.append(min_hash)
-        logging.debug(
-            f"Computed minhash signature: {signature[:5]}..."
-        )  # Show a sample of the signature
         return signature
 
     def banding(self, signature: List[int]) -> List[int]:
@@ -75,9 +70,6 @@ class LSH(AbstractLSH):
             ]
             band_hash = int(hashlib.md5(str(band_signature).encode()).hexdigest(), 16)
             band_hashes.append(band_hash)
-        logging.debug(
-            f"Generated band hashes: {band_hashes[:5]}..."
-        )  # Show a sample of the hashes
         return band_hashes
 
     def add_document(self, doc_id: int, doc: str):
@@ -85,7 +77,6 @@ class LSH(AbstractLSH):
         signature = self.minhash(shingles)
         for band_hash in self.banding(signature):
             self.buckets[band_hash].append(doc_id)
-        logging.info(f"Document {doc_id} added to LSH.")
 
     def find_candidates(self):
         candidate_pairs = set()
@@ -93,7 +84,6 @@ class LSH(AbstractLSH):
             for i in range(len(bucket_docs)):
                 for j in range(i + 1, len(bucket_docs)):
                     candidate_pairs.add((bucket_docs[i], bucket_docs[j]))
-        logging.info(f"Candidate pairs found: {len(candidate_pairs)} pairs")
         return list(candidate_pairs)
 
 
@@ -143,5 +133,35 @@ class LSHWithUnionFind(LSH):
         for doc_id in self.uf.parent:
             root = self.uf.find(doc_id)
             clusters[root].append(doc_id)
-        logging.info(f"Clustered {len(clusters)} unique groups from candidates.")
         return clusters
+
+
+class LSHImproved(LSH):
+    def __init__(
+        self,
+        num_bands: int,
+        rows_per_band: int,
+        num_hashes: int,
+        shingle_size: int = 5,
+        probes: int = 1,
+    ):
+        super().__init__(num_bands, rows_per_band, num_hashes, shingle_size)
+        self.probes = probes  # Number of additional probes in multi-probe LSH
+
+    def multi_probe_banding(self, signature: List[int]) -> List[int]:
+        band_hashes = super().banding(signature)
+        probe_hashes = []
+        for band_hash in band_hashes:
+            probe_hashes.append(band_hash)
+            for probe in range(1, self.probes + 1):
+                probe_hashes.extend([band_hash + probe, band_hash - probe])
+        return probe_hashes
+
+    def add_document(self, doc_id: int, doc: str):
+        shingles = self.shingle_document(doc)
+        signature = self.minhash(shingles)
+        for band_hash in self.multi_probe_banding(signature):
+            self.buckets[band_hash].append(doc_id)
+        logging.info(
+            f"Document {doc_id} added to Improved LSH with multi-probe lookup."
+        )
