@@ -35,8 +35,8 @@ certifi = "2024.8.30"
 charset-normalizer = "3.4.0"
 requests = "2.32.3"
 virtualenv = "20.27.1"
-sphinx = "^5.3.0"  # Ensure Sphinx is included for documentation
-sphinx-rtd-theme = "^1.0.0"  # Optional theme for documentation
+sphinx = "^5.3.0"  # For documentation generation
+sphinx-rtd-theme = "^1.0.0"  # Optional theme for Sphinx
 mkdocs = "^1.2.3"
 mkdocs-include-markdown-plugin = "^3.2.3"
 mkdocs-material = "^8.1.11"
@@ -47,7 +47,7 @@ livereload = "^2.6.3"
 pyreadline = "^2.1"
 mike = "^1.1.2"
 
-# Testing and development dependencies
+# Development and testing tools
 black = "^22.3.0"
 isort = "5.10.1"
 flake8 = "4.0.1"
