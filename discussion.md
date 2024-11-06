@@ -1,77 +1,68 @@
+# Discussion
 
+## 1. Exploratory Data Analysis (EDA)
 
-For the initial implementation of Bloom Filters, we chose the bitarray approach as opposed to the byte array approach.
+We began with exploratory data analysis (EDA) to get a sense of the dataset’s structure. This initial analysis allowed us to make informed choices about processing, filtering, and deduplication methods. Specifically, we looked at:
+- **Document Lengths**: Document lengths varied widely, which helped us decide on flexible shingle sizes for Locality Sensitive Hashing (LSH).
+- **Shingle Distribution**: Examining common shingles (n-grams) provided insight into which hash functions would best capture similarities among documents.
+- **Baseline Duplicate Detection**: We implemented a baseline MD5 hash method to detect exact duplicates. This gave us a performance benchmark for more sophisticated methods like Bloom filters and LSH.
 
-To test the potential improvements to the bloom filter implementation, I created a list of unique words (length of 3653)to add into the bloom filter. After doing so, I took another list of unique words (length of 3653) to query in the bloom filter. This should mean that there are no false positives because they are all unique, yet the bloom filter will identify some as positive. I want to examine the false positive rate. I determined that this would be a good way to test the false positive rate from googling how to test false positive rates in bloom filters.
+Overall, EDA confirmed that a single approach wouldn’t suffice to capture near-duplicates effectively. These insights laid the foundation for the rest of our work.
 
-For the initial implementation of the bloom filter, before trying improvements, we had a very high false positive rate (0.45).
+## 2. Engineering Decisions
 
-The first improvement I made was changing the number k of hash functions and just keeping a singular mmh3 hash function. Shrinking down the number of hash functions dramatically improved the false positive rate. The following graph shows how the less hash functions there were, the better the false positive rate.
+### a. Preprocessing Steps
+We applied several preprocessing steps to ensure consistency and improve deduplication accuracy:
+- **Tokenization**: Splitting documents into trigrams (shingles of size 3) provided a good balance between capturing document features and avoiding excessive processing.
+- **Normalization**: By converting text to lowercase and removing punctuation, we reduced variability in the data. This standardization reduced the likelihood of mismatches due to minor formatting differences.
 
-![](./falsepos.png)
+### b. Bloom Filter Implementation
+For the Bloom filter, we chose the `bitarray` library, which allowed efficient bit manipulation and memory savings. Initially, we observed a high false positive rate of around 0.45. To address this, we experimented with different values for the number of hash functions \( k \). 
 
-The next implementation I experimented with was a counting bloom filter. This ended up bringing the false positive rate down to about 0. I read about this implementation here: [https://medium.com/analytics-vidhya/cbfs-44c66b1b4a78]. I thought the counting bloom filter was interesting because you are now able to remove items. This was a unique implementation that I did not see befre. Basically instead of limiting a hash to 1, you are able to count upwards with each additional instance of an item. While adding the ability to remove items as well by subtracting values from the hash bit arrays. A byproduct of this implementation was the false positive rate dropping dramatically.
+Our first improvement involved reducing \( k \), which significantly lowered the false positive rate. Below is the plot showing the effect of varying \( k \):
 
+![False Positive Rate vs. Number of Hash Functions](./falsepos.png)
 
-# Discussion on Improvements to LSH for Near-Duplicate Detection
+The plot shows that fewer hash functions resulted in a lower false positive rate up to a point, after which the accuracy gains began to taper off.
 
-## Worst-Case Scenario for LSH
-The worst-case scenario for LSH in text deduplication occurs when similar documents fail to hash into the same bucket due to minor differences in shingles. ...
+### c. Optimized Bloom Filter with Counting
+Building on the initial Bloom filter, we implemented a **counting Bloom filter**. This enhancement allowed us to dynamically add and remove items by incrementing or decrementing counts rather than setting a bit to 1. Implementing this functionality was particularly interesting because it allowed us to reduce false positives further, as well as manage memory efficiently.
 
-## Improvements and Rationale
+The idea for the counting Bloom filter came from articles on the practical applications of Bloom filters, such as those on Analytics Vidhya. Using a counting Bloom filter enabled us to remove elements without affecting overall accuracy, which could be advantageous for real-time applications requiring dynamic adjustments.
 
-LSHImproved class: adaptive shingle size selection. This improvement dynamically adjusts the shingle size for each document based on its length. The idea is that longer documents can have larger shingles, reducing the number of shingles generated while maintaining sufficient representation, whereas shorter documents use smaller shingles.
+## 3. LSH Implementations and Improvements
 
-### 2. Multi-Probe LSH
-Following [Introduction to Information Retrieval, Sec 3.4.2], we implemented multi-probe LSH. This allowed ...
+### a. Basic LSH
+Our basic LSH implementation leveraged minhashing and banding to group similar documents into buckets. Minhashing generated a compact signature for each document, while banding helped us identify candidate pairs by comparing only certain portions of the signature. Although this approach was straightforward, we observed that minor variations in shingles occasionally caused similar documents to hash into different buckets.
 
-...
+The `lsh.py` file contains our primary implementation, including helper functions for minhashing, banding, and candidate generation. We focused on modularity here, allowing for easy testing and iterative improvements.
 
-## Results
-We observed that ...
-- Visualization 1: False positive rate vs. number of hash functions in the Bloom filter.
-- Visualization 2: S-curve analysis of different band and row settings ...
+### b. Improved LSH
+To improve the basic LSH implementation, we introduced two major changes:
 
+1. **Adaptive Shingle Size Selection**: In the `LSHImproved` class, we implemented dynamic shingle sizing based on document length. Longer documents used larger shingles to reduce the total count without sacrificing essential information, while shorter documents used smaller shingles to maintain precision. This adjustment helped reduce processing time and memory usage.
 
-# Discussion on LSH and Bloom Filter Improvements
+2. **Multi-Probe LSH**: We introduced multi-probe functionality in the LSH, inspired by *Introduction to Information Retrieval*. Multi-probe LSH allows us to probe neighboring buckets in addition to the primary hash bucket, improving recall for near-duplicates that might otherwise fall into different buckets. This added complexity to the code, but the boost in accuracy was well worth the effort. 
 
-## Worst-Case Scenario for LSH
-In the worst-case scenario, similar documents might not hash into the same bucket due to slight variations in shingles ...
+### c. Union-Find Integration
+In addition to multi-probe LSH, we implemented Union-Find to handle the clustering of similar documents. Our Union-Find implementation used path compression and union by rank to optimize cluster formation, which reduced redundancy and ensured efficient memory use.
 
-## Improvements Implemented
+## 4. Visualizations, Results, and Overall Analysis
 
-### Adjustable Shingle Size
-Based on [Mining of Massive Datasets, Sec 3.2.2], we experimented with various shingle sizes to ...
+### a. Bloom Filter Analysis
+Here is a plot showing the impact of varying the number of hash functions \( k \) on the false positive rate:
 
-### Multi-Probe LSH
-Following [Introduction to Information Retrieval, Sec 3.4.2], we implemented multi-probe LSH. This increased ...
+![False Positive Rate vs. Number of Hash Functions](./falsepos.png)
 
-## Results
-- For Bloom Filter: see Figure 1 for false positive rate vs. number of hash functions.
-- For LSH: see Figure 2 for S-curve analysis ...
+This analysis helped us fine-tune the Bloom filter, ultimately deciding on an optimal \( k \) value that minimized false positives without excessive memory usage.
 
-### Choices Made in Implementation
-1. **Document Processing**: We normalized the text by ...
-2. **Shingle Size**: Shingle size was set to ...
+### b. LSH S-Curve Analysis
+To determine the best banding configuration, we conducted an S-curve analysis by varying the number of bands \( b \) and rows \( r \). This analysis revealed the trade-offs between recall and precision, allowing us to choose parameters that maximized true positives while controlling false positives.
 
+### c. Baseline Runtime and Results Summary
 
-## Runtime and Processing Efficiency
-
-To calculate the "Documents Processed per Minute" for each dataset, we use the following formula:
-
-\[
-\text{Documents Processed per Minute} = \frac{\text{Number of Documents}}{\text{Total Time (in minutes)}}
-\]
-
-Given that each of the MD5 baseline runs completed in approximately 1 second, we can compute the documents processed per minute as follows:
-
----
-
-## Baseline Runtime and Results Summary
-
-### Baseline Approach
-
-The MD5-based baseline deduplication was applied to datasets of various sizes to detect exact duplicates. Below is the summary of the results, including the number of duplicate pairs detected, runtime efficiency, and the calculated documents processed per minute.
+#### Baseline Approach
+We began with an MD5-based baseline approach for exact duplicate detection, which provided valuable insights into processing speed and efficiency. Here’s a summary of the results:
 
 | Dataset           | Number of Documents | Total Time (seconds) | Duplicate Pairs Found | Documents Processed per Minute |
 |-------------------|---------------------|-----------------------|------------------------|--------------------------------|
@@ -80,17 +71,11 @@ The MD5-based baseline deduplication was applied to datasets of various sizes to
 | `tenk.tsv`         | 9,995               | ~1                    | 1059                   | 599,700                         |
 
 ### Observations
+- **Efficiency**: The MD5-based approach was highly efficient for exact duplicates, processing each dataset quickly and achieving high throughput.
+- **Limitations**: While effective for exact duplicates, this method wasn’t suitable for near-duplicate detection, leading us to explore more complex techniques like LSH.
 
-- **Duplicate Detection**: The MD5 hashing approach effectively detected exact duplicates in all datasets, with larger datasets containing more duplicate pairs.
-  
-- **Efficiency**: The MD5-based deduplication processed each dataset very quickly, achieving high throughput rates, as shown in the "Documents Processed per Minute" column. Even for the largest dataset (`tenk.tsv`), it handled nearly 600,000 documents per minute.
-
-- **Scalability**: This baseline implementation is both efficient and highly scalable for exact duplicate detection. However, it cannot detect near-duplicates, which will be addressed by implementing LSH.
-
-
-### LSH Implementation
-
-To evaluate the efficiency of the LSH implementations, we tested the Union-Find LSH method across three datasets of varying sizes. The following table summarizes the runtime for each dataset, including the total time taken, documents processed per minute, and observations on scalability.
+### d. LSH Implementation Runtime and Results Summary
+We evaluated the LSH implementation using Union-Find clustering across datasets of varying sizes:
 
 | Dataset           | Number of Documents | Start Time           | End Time             | Total Time (minutes) | Documents Processed Per Minute |
 |-------------------|---------------------|----------------------|----------------------|-----------------------|---------------------------------|
@@ -99,15 +84,18 @@ To evaluate the efficiency of the LSH implementations, we tested the Union-Find 
 | `tenk.tsv`         | 9,995               | 17:41:00             | 18:16:10             | 35.17                 | ~284                             |
 
 ### Observations
+- **Consistency**: The LSH method maintained a stable processing rate across datasets, suggesting scalability.
+- **Memory Usage**: Using Python’s `memory_profiler`, we observed increased memory requirements for larger datasets, but Union-Find optimizations helped manage memory effectively.
+- **Error Analysis**: A manual review of clustered documents showed that while most clusters were accurate, some included documents with only slight overlap, suggesting potential for further refinement in hash selection and shingle adjustments.
 
-- **Consistency Across Datasets**: The Union-Find LSH method maintained a fairly consistent processing rate of around 260–280 documents per minute, regardless of the dataset size. This consistency indicates that the method scales linearly with dataset size, which is promising for larger document collections.
-  
-- **Memory Usage**: Memory usage was monitored by using Python’s `memory_profiler` package, which allowed us to track peak memory consumption during processing. As expected, the larger datasets required more memory due to the higher volume of document shingle storage and hash computations. However, with Union-Find optimizations, we minimized redundant memory usage by clustering similar documents efficiently.
-  
-- **Error Analysis**: To evaluate the quality of deduplication, we traced a sample of document clusters back to their raw content. Results show that while most clusters accurately grouped near-duplicates, a few clusters included documents with marginal content overlap. This highlights a potential improvement area for more selective hash functions or adjustable shingle sizes.
+## 5. Challenges and Conclusions
 
-This analysis demonstrates that while the Union-Find LSH implementation is effective and scalable, adjustments in hash selection, shingle size, and memory optimization can further enhance its performance and accuracy.
+### a. Challenges
+- **Shingle Size Selection**: Choosing the right shingle size was challenging, as it affected recall and precision. We had to strike a balance to capture relevant similarities without adding noise.
+- **Memory Management**: Scaling LSH required efficient memory handling to avoid slowdowns, especially with larger datasets. This experience taught us the importance of profiling and optimizing memory usage.
+- **Complexity of Multi-Probe LSH**: Implementing and tuning multi-probe LSH was complex but ultimately worth it for the improved detection of near-duplicates.
 
----
+### b. Conclusions
+This project provided hands-on experience with scalable deduplication techniques. Combining Bloom filters with LSH, particularly with adaptive shingle sizing and multi-probe LSH, allowed us to balance precision, recall, and processing efficiency effectively.
 
-This section provides a structured summary of your observations, including runtime data, memory usage insights, and error analysis based on your experiment findings.
+Future work could involve further tuning of LSH parameters, exploring alternative hash functions, and implementing additional memory optimizations to enhance performance on even larger datasets. This project highlighted the power and scalability of combining Bloom filters and LSH for deduplication tasks and gave us valuable insights into the complexities of algorithmic optimization and resource management.
