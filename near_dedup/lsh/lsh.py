@@ -252,6 +252,12 @@ class LSHImproved:
             for i in range(len(doc) - self.shingle_size + 1)
         }
 
+    def calculate_probability(self, similarity: float) -> float:
+        """Calculate the probability of two items being in the same bucket at least once based on similarity."""
+        r = self.rows_per_band
+        b = self.num_bands
+        return 1 - (1 - similarity**r) ** b
+
     def minhash(self, shingles: Set[str]) -> List[int]:
         """Generates a minhash signature from the set of shingles."""
         signature = []

@@ -1,20 +1,22 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+from near_dedup.lsh.lsh import LSH, LSHImproved, LSHWithUnionFind # Import the class
 
+# Define a range of similarities and multiple (b, r) configurations
+similarities = np.linspace(0, 1, 100)  # Similarity values from 0 to 1
+band_row_combinations = [(10, 2), (15, 3), (20, 4), (25, 5)]  # Different (b, r) configurations
 
-def plot_false_positive_rate_vs_hash_functions(num_hashes, false_positive_rates):
-    plt.plot(num_hashes, false_positive_rates)
-    plt.xlabel("Number of Hash Functions (k)")
-    plt.ylabel("False Positive Rate")
-    plt.title("False Positive Rate vs Number of Hash Functions in Bloom Filter")
-    plt.show()
+# Plot S-curve for each (b, r) configuration
+plt.figure(figsize=(10, 6))
+for b, r in band_row_combinations:
+    lsh_model = LSHImproved(num_bands=b, rows_per_band=r, num_hashes=100)
+    probabilities = [lsh_model.calculate_probability(s) for s in similarities]
+    plt.plot(similarities, probabilities, label=f"b={b}, r={r}")
 
-
-def plot_s_curve(num_bands, num_rows, thresholds, false_positive_rates):
-    for i, b in enumerate(num_bands):
-        plt.plot(thresholds, false_positive_rates[i], label=f"b={b}, r={num_rows[i]}")
-    plt.xlabel("Threshold")
-    plt.ylabel("Similarity Probability")
-    plt.legend()
-    plt.title("S-Curve Analysis for LSH")
-    plt.show()
+# Customize the plot
+plt.title("S-Curve for LSH with Multiple (b, r) Configurations")
+plt.xlabel("Similarity")
+plt.ylabel("Probability of Being in the Same Bucket")
+plt.legend(title="(b, r) Configurations")
+plt.grid()
+plt.show()

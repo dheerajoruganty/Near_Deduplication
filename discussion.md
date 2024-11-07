@@ -56,8 +56,38 @@ Here is a plot showing the impact of varying the number of hash functions \( k \
 
 This analysis helped us fine-tune the Bloom filter, ultimately deciding on an optimal \( k \) value that minimized false positives without excessive memory usage.
 
-### b. LSH S-Curve Analysis
-To determine the best banding configuration, we conducted an S-curve analysis by varying the number of bands \( b \) and rows \( r \). This analysis revealed the trade-offs between recall and precision, allowing us to choose parameters that maximized true positives while controlling false positives.
+### S-Curve Analysis for Locality Sensitive Hashing (LSH)
+
+In this project, we evaluated the performance of Locality Sensitive Hashing (LSH) by examining the probability of two items with a given similarity being placed in the same bucket across different configurations of bands \( b \) and rows \( r \) per band. The resulting S-curve plot provides insights into how varying these parameters affects the behavior of LSH in identifying similar items.
+
+### Key Findings
+
+1. **Impact of Bands and Rows on Selectivity**:
+   - The S-curve plot shows that as we increase the number of bands \( b \) and decrease the number of rows \( r \) per band, the curve becomes steeper.
+   - Steeper curves indicate that the LSH configuration is more selective, meaning it will only group items with higher similarities in the same bucket.
+   - For example, the configuration \( b = 25, r = 5 \) shows a steep transition, with the probability of being in the same bucket reaching near 1 only for items with a similarity above 0.6. This configuration is suitable for applications that require a high similarity threshold to consider items as similar.
+
+2. **Broader Similarity Detection with Lower \( b \) Values**:
+   - Conversely, configurations with lower \( b \) values and higher \( r \) values (e.g., \( b = 10, r = 2 \)) yield a more gradual S-curve. This means that items with lower similarity are more likely to be placed in the same bucket.
+   - A more gradual curve is beneficial for applications where we want to capture broader similarities, accepting pairs with lower similarity levels.
+
+3. **Tuning for Application Requirements**:
+   - The choice of \( b \) and \( r \) should be guided by the application's specific similarity threshold.
+   - If the goal is to identify only highly similar items, a higher \( b \) and lower \( r \) configuration (e.g., \( b = 25, r = 5 \)) is preferable due to its steep S-curve.
+   - For applications needing a more inclusive similarity threshold, configurations with lower \( b \) and higher \( r \) (e.g., \( b = 10, r = 2 \)) may be more effective.
+
+### Practical Implications
+
+This analysis highlights the trade-off between selectivity and recall in LSH configurations:
+- **High Selectivity (Steep S-Curve)**: Suitable for tasks requiring high similarity to group items, reducing false positives but potentially missing items with moderate similarity.
+- **High Recall (Gradual S-Curve)**: Useful in scenarios where capturing a broader range of similar items is essential, though it may lead to increased false positives.
+
+By tuning the \( b \) and \( r \) values, we can control the specificity of LSH for particular applications. The S-curve plot thus serves as a valuable tool for visualizing and adjusting LSH's sensitivity to similarity, balancing between capturing highly similar pairs and allowing broader matches.
+
+### Conclusion
+
+In conclusion, the S-curve analysis demonstrates the effectiveness of LSH in selectively identifying similar items based on the configuration of bands and rows. This enables practitioners to adjust LSH parameters to meet the specific needs of their application, achieving a tailored balance between precision and recall in similarity detection.
+
 
 ### c. Baseline Runtime and Results Summary
 
@@ -82,6 +112,19 @@ We evaluated the LSH implementation using Union-Find clustering across datasets 
 | `threehundred.tsv` | 289                 | 17:36:06             | 17:37:12             | 1.10                  | ~262                             |
 | `onek.tsv`         | 996                 | 17:37:12             | 17:40:59             | 3.78                  | ~263                             |
 | `tenk.tsv`         | 9,995               | 17:41:00             | 18:16:10             | 35.17                 | ~284                             |
+
+
+
+
+### Improved LSH Deduplication Performance Summary
+
+| Dataset           | Number of Documents | Start Time           | End Time             | Total Time (minutes) | Documents Processed Per Minute |
+|-------------------|---------------------|----------------------|----------------------|-----------------------|---------------------------------|
+| `threehundred.tsv` | 289                 | 13:48:53             | 13:49:59             | 1.10                  | ~262                             |
+| `onek.tsv`         | 996                 | 13:50:45             | 13:54:24             | 3.65                  | ~273                             |
+| `tenk.tsv`         | 9,995               | 13:55:15             | 14:30:27             | 35.20                 | ~284                             |
+| `hundredk.tsv`     | 99,985              | 16:01:11             | 21:42:50             | 341.65                | ~293                             |
+
 
 ### Observations
 - **Consistency**: The LSH method maintained a stable processing rate across datasets, suggesting scalability.
