@@ -19,7 +19,9 @@ This repository provides code for detecting exact and near-duplicate documents u
   - [LSH and Bloom Filters](#lsh-and-bloom-filters)
 - [Environment Setup](#environment-setup)
 - [Results](#results)
+- [Documentation](#documentation)
 - [Contributors](#contributors)
+
 
 ---
 
