@@ -1,19 +1,8 @@
 # Near Deduplication with Bloom Filters and LSH
 
-<p align="center">
-<a href="https://pypi.python.org/pypi/near_dedup">
-    <img src="https://img.shields.io/pypi/v/near_dedup.svg"
-        alt="Release Status">
-</a>
+![Pytest](github.com/DSAN6700-24Fall/assignment-2-five-guys/actions/workflows/dev.yml/badge.svg?label=Pytest)
 
-<a href="https://dheerajoruganty.github.io/near_dedup/">
-    <img src="https://img.shields.io/website/https/dheerajoruganty.github.io/near_dedup/index.html.svg?label=docs&down_message=unavailable&up_message=available" alt="Documentation Status">
-</a>
 
-<a href="https://pyup.io/repos/github/dheerajoruganty/near_dedup/">
-<img src="https://pyup.io/repos/github/dheerajoruganty/near_dedup/shield.svg" alt="Updates">
-</a>
-</p>
 
 This repository provides code for detecting exact and near-duplicate documents using Bloom Filters and Locality Sensitive Hashing (LSH). It also includes baseline methods for exact duplicates (MD5 hashing) and similarity-based deduplication (N-Gram and Jaccard similarity). The goal is to offer an efficient solution for large-scale deduplication by leveraging memory-efficient data structures and hash-based clustering.
 
