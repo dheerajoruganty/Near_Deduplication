@@ -118,7 +118,14 @@ def test_md5_baseline():
     """Test baseline exact duplicate detection using MD5."""
     docs = ["Hello World", "Another Document", "Hello World"]
     expected_duplicates = [(0, 2)]
+
+    # Get duplicates from the function
     duplicates = find_exact_duplicates(docs)
+
+    # Ensure duplicates are tuples for comparison
+    duplicates = [tuple(item) for item in duplicates]
+
+    # Assert equality with expected duplicates
     assert set(duplicates) == set(
         expected_duplicates
     ), f"Expected {expected_duplicates}, but got {duplicates}"
