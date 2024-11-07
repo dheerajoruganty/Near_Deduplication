@@ -21,7 +21,7 @@ For the Bloom filter, we chose the `bitarray` library, which allowed efficient b
 
 Our first improvement involved reducing \( k \), which significantly lowered the false positive rate. Below is the plot showing the effect of varying \( k \):
 
-![False Positive Rate vs. Number of Hash Functions](./falsepos.png)
+![False Positive Rate vs. Number of Hash Functions](./docs/img/falsepos.png)
 
 The plot shows that fewer hash functions resulted in a lower false positive rate up to a point, after which the accuracy gains began to taper off.
 
@@ -52,7 +52,7 @@ In addition to multi-probe LSH, we implemented Union-Find to handle the clusteri
 ### a. Bloom Filter Analysis
 Here is a plot showing the impact of varying the number of hash functions \( k \) on the false positive rate:
 
-![False Positive Rate vs. Number of Hash Functions](./falsepos.png)
+![False Positive Rate vs. Number of Hash Functions](./docs/img/falsepos.png)
 
 This analysis helped us fine-tune the Bloom filter, ultimately deciding on an optimal \( k \) value that minimized false positives without excessive memory usage.
 
@@ -94,7 +94,7 @@ These worst-case scenarios highlight the limitations of LSH in tasks requiring p
 ### S-Curve Analysis for Locality Sensitive Hashing (LSH)
 
 In this project, we evaluated the performance of Locality Sensitive Hashing (LSH) by examining the probability of two items with a given similarity being placed in the same bucket across different configurations of bands \( b \) and rows \( r \) per band. The resulting S-curve plot provides insights into how varying these parameters affects the behavior of LSH in identifying similar items.
-![](./S_Curve_LSH_Multiple.png)
+![](./docs/img/S_Curve_LSH_Multiple.png)
 ### Key Findings
 
 1. **Impact of Bands and Rows on Selectivity**:
@@ -126,11 +126,20 @@ By tuning the \( b \) and \( r \) values, we can control the specificity of LSH 
 #### Baseline Approach
 We began with an MD5-based baseline approach for exact duplicate detection, which provided valuable insights into processing speed and efficiency. Here’s a summary of the results:
 
-| Dataset           | Number of Documents | Total Time (seconds) | Duplicate Pairs Found | Documents Processed per Minute |
-|-------------------|---------------------|-----------------------|------------------------|--------------------------------|
-| `threehundred.tsv` | 289                 | ~1                    | 16                     | 17,340                          |
-| `onek.tsv`         | 996                 | ~1                    | 87                     | 59,760                          |
-| `tenk.tsv`         | 9,995               | ~1                    | 1059                   | 599,700                         |
+
+\[
+\text{Documents Processed per 100 Milliseconds} = \frac{\text{Number of Documents}}{\text{Total Time (milliseconds)} / 100}
+\]
+
+
+| Dataset            | Number of Documents | Total Time (milliseconds) | Duplicate Clusters Found | Documents Processed per 100 Milliseconds |
+|--------------------|---------------------|---------------------------|--------------------------|-----------------------------------------|
+| `threehundred.tsv` | 289                 | ~725                      | 16                       | 39                                      |
+| `onek.tsv`         | 996                 | ~950                      | 87                       | 105                                     |
+| `tenk.tsv`         | 9,995               | ~980                      | 1,059                    | 1,020                                   |
+| `hundredk.tsv`     | 99,985              | ~995                      | 4,285                    | 10,050                                  |
+
+
 
 ### Observations
 - **Efficiency**: The MD5-based approach was highly efficient for exact duplicates, processing each dataset quickly and achieving high throughput.

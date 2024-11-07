@@ -41,7 +41,13 @@ def find_exact_duplicates(documents):
     # Return all clusters, including those with single entries
     clusters = list(seen_hashes.values())
 
-    logger.info(f"Exact duplicate clustering complete. Found {len(clusters)} clusters.")
+    duplicate_cluster_count = sum(
+        1 for cluster in seen_hashes.values() if len(cluster) > 1
+    )
+
+    logger.info(
+        f"Exact duplicate clustering complete. Found {duplicate_cluster_count} clusters with duplicates."
+    )
     return clusters
 
 
