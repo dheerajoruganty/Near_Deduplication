@@ -47,7 +47,6 @@ livereload = "^2.6.3"
 pyreadline = "^2.1"
 mike = "^1.1.2"
 mmh3 = "^5.0.1"
-bitarray = "^3.0.0"
 ngram = "^4.0.3"
 
 # Development and testing tools
