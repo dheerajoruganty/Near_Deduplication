@@ -1,5 +1,6 @@
 import hashlib
 import logging
+from collections import defaultdict
 from collections import Counter
 from nltk.util import ngrams
 from near_dedup.bloom_filter.bloom_filter import BloomFilter
@@ -53,51 +54,41 @@ def tokenize_ngrams(document, n=3):
 
 
 def find_ngram_duplicates(documents, n=3, threshold=0.8):
-    """Find duplicate documents based on n-gram Jaccard similarity.
-
-    Parameters:
-        documents (list): List of document strings.
-        n (int): N-gram size.
-        threshold (float): Threshold for considering documents as duplicates.
-
-    Returns:
-        list: List of tuples with duplicate document indices.
-    """
+    """Cluster documents based on n-gram Jaccard similarity."""
     ngram_sets = {}
-    duplicates = []
+    clusters = defaultdict(list)
     logger.info("Starting n-gram duplicate detection.")
 
+    # Create n-gram sets for each document
     for doc_id, doc in enumerate(documents):
         ngrams_list = tokenize_ngrams(doc, n=n)
         ngram_set = set(ngrams_list)
-
-        logger.debug(f"Document {doc_id} has {len(ngram_set)} n-grams.")
 
         if not ngram_set:
             logger.debug(f"Document {doc_id} skipped: fewer than {n} tokens.")
             continue
 
+        # Compare with previous documents
+        matched = False
         for other_id, other_ngram_set in ngram_sets.items():
             intersection = ngram_set & other_ngram_set
             union = ngram_set | other_ngram_set
             similarity = len(intersection) / len(union) if union else 0
 
-            logger.debug(
-                f"Similarity between Document {doc_id} and Document {other_id}: {similarity:.4f}"
-            )
-
             if similarity >= threshold:
-                duplicates.append((doc_id, other_id))
-                logger.debug(
-                    f"N-Gram duplicate found: Document {doc_id} is similar to Document {other_id} with similarity {similarity:.4f}."
-                )
+                clusters[other_id].append(doc_id)
+                matched = True
+                break
+
+        if not matched:
+            clusters[doc_id].append(
+                doc_id
+            )  # Start a new cluster for this unique document
 
         ngram_sets[doc_id] = ngram_set
 
-    logger.info(
-        f"N-gram duplicate detection complete. Found {len(duplicates)} duplicate pairs."
-    )
-    return duplicates
+    # Return clusters as a list of lists
+    return list(clusters.values())
 
 
 # Baseline 3: Jaccard Similarity
@@ -115,17 +106,20 @@ def jaccard_similarity(doc1, doc2):
 
 
 def find_jaccard_duplicates(documents, threshold=0.7):
-    """Find duplicate documents based on Jaccard similarity."""
-    duplicates = []
+    """Cluster documents based on Jaccard similarity."""
+    clusters = defaultdict(list)
     logger.info("Starting Jaccard duplicate detection.")
-    for i in range(len(documents)):
-        for j in range(i + 1, len(documents)):
-            if jaccard_similarity(documents[i], documents[j]) >= threshold:
-                duplicates.append((i, j))
-                logger.debug(
-                    f"Jaccard duplicate found: Document {i} is similar to Document {j}."
-                )
-    logger.info(
-        f"Jaccard duplicate detection complete. Found {len(duplicates)} duplicate pairs."
-    )
-    return duplicates
+
+    for i, doc1 in enumerate(documents):
+        matched = False
+        for cluster_id, cluster_docs in clusters.items():
+            if jaccard_similarity(doc1, documents[cluster_id]) >= threshold:
+                cluster_docs.append(i)
+                matched = True
+                break
+
+        if not matched:
+            clusters[i].append(i)  # Start a new cluster if no match found
+
+    # Return clusters as a list of lists
+    return list(clusters.values())

@@ -174,13 +174,15 @@ def main():
         logging.info("Starting baseline deduplication.")
         if args.baseline == "md5":
             duplicates = find_exact_duplicates(documents)
+            save_results(duplicates, output_file)
         elif args.baseline == "ngram":
             duplicates = find_ngram_duplicates(
                 documents, n=args.n, threshold=args.threshold
             )
+            save_results(duplicates, output_file)
         elif args.baseline == "jaccard":
             duplicates = find_jaccard_duplicates(documents, threshold=args.threshold)
-        save_results(duplicates, output_file)
+            save_results(duplicates, output_file)
 
     # Standard LSH Mode
     elif args.mode == "lsh":
