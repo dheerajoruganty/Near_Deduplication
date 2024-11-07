@@ -18,7 +18,6 @@ logging.basicConfig(
 )
 
 # Mapping of dataset filenames to desired sizes
-# Mapping of dataset filenames to desired sizes
 dataset_size_mapping = {
     "five.tsv": "5",
     "hundred.tsv": "100",
@@ -56,7 +55,8 @@ def save_results(clusters, output_file):
 
     with open(output_file, "w") as file:
         for cluster in clusters:
-            file.write(" ".join(map(str, cluster)) + "\n")
+            sorted_cluster = sorted(cluster)  # Sort for consistent output
+            file.write(" ".join(map(str, sorted_cluster)) + "\n")
     logging.info(f"Results saved to {output_file}.")
 
 
@@ -121,6 +121,38 @@ def main():
         help="Similarity threshold for n-gram or Jaccard baseline (default: 0.8)",
     )
 
+    # LSH configuration arguments
+    parser.add_argument(
+        "--num_bands",
+        type=int,
+        default=10,
+        help="Number of bands for LSH (default: 10)",
+    )
+    parser.add_argument(
+        "--rows_per_band",
+        type=int,
+        default=5,
+        help="Number of rows per band for LSH (default: 5)",
+    )
+    parser.add_argument(
+        "--num_hashes",
+        type=int,
+        default=100,
+        help="Number of hash functions for minhash (default: 100)",
+    )
+    parser.add_argument(
+        "--shingle_size",
+        type=int,
+        default=5,
+        help="Size of each shingle (substring) (default: 5)",
+    )
+    parser.add_argument(
+        "--probes",
+        type=int,
+        default=1,
+        help="Number of additional probes for multi-probe LSH (default: 1)",
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -132,7 +164,8 @@ def main():
 
     # Initialize the DocumentDeduplicator with desired Bloom Filter and LSH parameters
     deduplicator = DocumentDeduplicator(
-        bloom_filter_params=(1000, 0.01), lsh_params=(10, 5, 100)
+        bloom_filter_params=(1000, 0.01),
+        lsh_params=(args.num_bands, args.rows_per_band, args.num_hashes),
     )
 
     # Deduplication Mode
@@ -142,53 +175,15 @@ def main():
         cluster_ids = [[doc_id for doc_id in cluster] for cluster in clusters]
         save_results(cluster_ids, output_file)
 
-    # Nearest Neighbor Search Mode
-    elif args.mode == "search":
-        if not args.query:
-            parser.error(
-                "The --query argument is required for nearest neighbor search mode."
-            )
-        logging.info("Building index for nearest neighbor search.")
-        deduplicator.build_index(documents)
-        neighbors = deduplicator.nearest_neighbor_search(args.query)
-        print("Nearest Neighbors for Query Document:")
-        for cluster_id, cluster in neighbors.items():
-            print(
-                f"Cluster {cluster_id}: {', '.join(str(doc_id) for doc_id in cluster)}"
-            )
-
-    # Baseline Mode
-    elif args.mode == "baseline":
-        if not args.baseline:
-            parser.error("The --baseline argument is required for baseline mode.")
-
-        # Run each baseline based on the provided argument
-        if args.baseline == "md5":
-            duplicates = find_exact_duplicates(documents)
-            save_results(duplicates, output_file)
-
-        elif args.baseline == "ngram":
-            duplicates = find_ngram_duplicates(
-                documents, n=args.n, threshold=args.threshold
-            )
-            save_results(duplicates, output_file)
-
-        elif args.baseline == "jaccard":
-            duplicates = find_jaccard_duplicates(documents, threshold=args.threshold)
-            save_results(duplicates, output_file)
-
-        elif args.baseline == "bloom":
-            duplicates = bloom_filter_duplicates(documents)
-            save_results([[doc_id] for doc_id in duplicates], output_file)
-
-        elif args.baseline == "lsh":
-            duplicates = lsh_duplicates(documents)
-            save_results(duplicates, output_file)
-
     # Standard LSH Mode
     elif args.mode == "lsh":
         logging.info("Starting standard LSH deduplication.")
-        lsh = LSH(num_bands=10, rows_per_band=5, num_hashes=100)
+        lsh = LSH(
+            num_bands=args.num_bands,
+            rows_per_band=args.rows_per_band,
+            num_hashes=args.num_hashes,
+            shingle_size=args.shingle_size,
+        )
         for idx, doc in enumerate(documents):
             lsh.add_document(idx, doc)
         duplicates = lsh.find_candidates()
@@ -197,16 +192,33 @@ def main():
     # Improved LSH Mode
     elif args.mode == "improved_lsh":
         logging.info("Starting improved LSH deduplication.")
-        improved_lsh = LSHImproved(num_bands=15, rows_per_band=4, num_hashes=100)
+        improved_lsh = LSHImproved(
+            num_bands=args.num_bands,
+            rows_per_band=args.rows_per_band,
+            num_hashes=args.num_hashes,
+            shingle_size=args.shingle_size,
+            probes=args.probes,
+        )
         for idx, doc in enumerate(documents):
             improved_lsh.add_document(idx, doc)
-        duplicates = improved_lsh.find_candidates()
-        save_results(duplicates, output_file)
+
+        # Get clusters as a list of lists for saving
+        clusters = improved_lsh.cluster_candidates()
+
+        # Convert clusters to the format needed by save_results
+        formatted_clusters = [cluster for cluster in clusters.values()]
+
+        save_results(formatted_clusters, output_file)
 
     # Union-Find LSH Mode
     elif args.mode == "union_find_lsh":
         logging.info("Starting Union-Find LSH deduplication.")
-        union_find_lsh = LSHWithUnionFind(num_bands=10, rows_per_band=5, num_hashes=100)
+        union_find_lsh = LSHWithUnionFind(
+            num_bands=args.num_bands,
+            rows_per_band=args.rows_per_band,
+            num_hashes=args.num_hashes,
+            shingle_size=args.shingle_size,
+        )
         for idx, doc in enumerate(documents):
             union_find_lsh.add_document(idx, doc)
         clusters = union_find_lsh.cluster_candidates()

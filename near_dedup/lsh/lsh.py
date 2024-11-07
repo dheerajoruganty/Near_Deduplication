@@ -2,7 +2,7 @@ import hashlib
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, Dict
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -226,8 +226,8 @@ class LSHWithUnionFind(LSH):
         return clusters
 
 
-class LSHImproved(LSH):
-    """Improved LSH with multi-probe support to increase recall."""
+class LSHImproved:
+    """Improved LSH with multi-probe support and Union-Find for clustering."""
 
     def __init__(
         self,
@@ -237,39 +237,88 @@ class LSHImproved(LSH):
         shingle_size: int = 5,
         probes: int = 1,
     ):
-        super().__init__(num_bands, rows_per_band, num_hashes, shingle_size)
-        self.probes = probes  # Number of additional probes in multi-probe LSH
+        self.num_bands = num_bands
+        self.rows_per_band = rows_per_band
+        self.num_hashes = num_hashes
+        self.shingle_size = shingle_size
+        self.probes = probes
+        self.buckets = defaultdict(list)
+        self.uf = UnionFind()
+
+    def shingle_document(self, doc: str) -> Set[str]:
+        """Generates shingles (substrings) of fixed size from the document."""
+        return {
+            doc[i : i + self.shingle_size]
+            for i in range(len(doc) - self.shingle_size + 1)
+        }
+
+    def minhash(self, shingles: Set[str]) -> List[int]:
+        """Generates a minhash signature from the set of shingles."""
+        signature = []
+        for i in range(self.num_hashes):
+            min_hash = float("inf")
+            for shingle in shingles:
+                hash_value = int(
+                    hashlib.md5((str(i) + shingle).encode()).hexdigest(), 16
+                )
+                min_hash = min(min_hash, hash_value)
+            signature.append(min_hash)
+        return signature
 
     def multi_probe_banding(self, signature: List[int]) -> List[int]:
-        """
-        Generates additional probes for each band to increase recall.
-
-        Parameters:
-        - signature: Minhash signature list.
-
-        Returns:
-        - List of band hashes with additional probe hashes.
-        """
-        band_hashes = super().banding(signature)
-        probe_hashes = []
-        for band_hash in band_hashes:
-            probe_hashes.append(band_hash)
+        """Divides the minhash signature into bands and hashes each band with multi-probe support."""
+        band_hashes = []
+        for band in range(self.num_bands):
+            band_signature = signature[
+                band * self.rows_per_band : (band + 1) * self.rows_per_band
+            ]
+            base_band_hash = int(
+                hashlib.md5(str(band_signature).encode()).hexdigest(), 16
+            )
+            band_hashes.append(base_band_hash)
             for probe in range(1, self.probes + 1):
-                probe_hashes.extend([band_hash + probe, band_hash - probe])
-        return probe_hashes
+                band_hashes.extend([base_band_hash + probe, base_band_hash - probe])
+        return band_hashes
 
     def add_document(self, doc_id: int, doc: str):
-        """
-        Adds a document to the Improved LSH with multi-probe functionality.
-
-        Parameters:
-        - doc_id: Unique identifier for the document.
-        - doc: Document as a string.
-        """
+        """Adds a document to the Improved LSH by hashing its signature bands and storing them in buckets."""
         shingles = self.shingle_document(doc)
         signature = self.minhash(shingles)
         for band_hash in self.multi_probe_banding(signature):
             self.buckets[band_hash].append(doc_id)
-        logging.info(
-            f"Document {doc_id} added to Improved LSH with multi-probe lookup."
-        ) 
+
+    def find_candidates(self) -> List[Tuple[int, int]]:
+        """Finds candidate pairs of documents that are likely to be similar."""
+        candidate_pairs = set()
+        for bucket_docs in self.buckets.values():
+            for i in range(len(bucket_docs)):
+                for j in range(i + 1, len(bucket_docs)):
+                    candidate_pairs.add((bucket_docs[i], bucket_docs[j]))
+        return list(candidate_pairs)
+
+    def cluster_candidates(self) -> Dict[int, List[int]]:
+        """Clusters documents based on candidate pairs using Union-Find."""
+        candidate_pairs = self.find_candidates()
+        for doc1, doc2 in candidate_pairs:
+            self.uf.add(doc1)
+            self.uf.add(doc2)
+            self.uf.union(doc1, doc2)
+
+        # Group clusters by their root document
+        clusters = defaultdict(list)
+        for doc_id in self.uf.parent:
+            root = self.uf.find(doc_id)
+            clusters[root].append(doc_id)
+
+        # Sort each cluster for consistent output
+        for key in clusters:
+            clusters[key].sort()
+        return clusters
+
+    def get_clusters(self) -> str:
+        """Returns clusters as a formatted string, with each cluster on a new line and document IDs separated by spaces."""
+        clusters = self.cluster_candidates()
+        formatted_clusters = [
+            " ".join(map(str, cluster)) for cluster in clusters.values()
+        ]
+        return "\n".join(formatted_clusters)
