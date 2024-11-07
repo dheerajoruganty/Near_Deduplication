@@ -100,7 +100,7 @@ You can run baseline deduplication methods to detect duplicates or near-duplicat
 
 Use the following commands to run advanced deduplication methods, including LSH and its variations.
 
-1. **Standard LSH Deduplication**:
+1. **Standard LSH with *Union-Find* Deduplication**:
    This method detects near-duplicates using locality-sensitive hashing (LSH). You can specify the number of bands and rows per band for LSH configuration.
 
     ```bash
@@ -112,13 +112,6 @@ Use the following commands to run advanced deduplication methods, including LSH 
 
     ```bash
     python main.py --mode improved_lsh --input_file data/thirty.tsv --num_bands 20 --rows_per_band 5 --num_hashes 100 --shingle_size 5 --probes 3
-    ```
-
-3. **Union-Find Enhanced LSH Deduplication**:
-   This method combines LSH with the Union-Find algorithm to improve clustering of near-duplicate documents.
-
-    ```bash
-    python main.py --mode union_find_lsh --input_file data/thirty.tsv --num_bands 20 --rows_per_band 5 --num_hashes 100 --shingle_size 5
     ```
 
 ### Collection-Wide Deduplication with Bloom Filter and LSH
