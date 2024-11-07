@@ -73,9 +73,23 @@ This solution is useful for deduplication tasks where document similarities must
 
 ## Usage
 
+
+### 1. Bloom Filter:
+
+
+You can run the bloom filter from `Examples` Folder in the Repository. There are 2 Jupyter notebooks, `Bloom_filter_exercises.ipynb` and `bloomfilterapplication.ipynb`
+
+
+### 2. LSH Baselines, LSH and Improved LSH
+
+
+Based on the `main.py` code provided, here are the updated instructions for running different deduplication methods, with commands tailored to the options available.
+
+---
+
 ### Baseline Methods
 
-You can run the baseline deduplication methods to detect duplicates or near-duplicates based on different similarity metrics:
+You can run baseline deduplication methods to detect duplicates or near-duplicates based on different similarity metrics:
 
 1. **MD5 Baseline (Exact Duplicate Detection)**:
     ```bash
@@ -92,26 +106,46 @@ You can run the baseline deduplication methods to detect duplicates or near-dupl
     python main.py --mode baseline --baseline jaccard --threshold 0.7 --input_file data/thirty.tsv
     ```
 
-### LSH and Bloom Filters
+### Advanced Deduplication Methods (LSH and Bloom Filter)
 
-To run the advanced LSH and Bloom Filter deduplication methods, use the following commands. These commands allow you to configure the deduplication process to detect exact duplicates (Bloom Filter) or near-duplicates (LSH).
+Use the following commands to run advanced deduplication methods, including LSH and its variations.
 
-1. **Run Bloom Filter for Exact Duplicates**:
+1. **Standard LSH Deduplication**:
+   This method detects near-duplicates using locality-sensitive hashing (LSH). You can specify the number of bands and rows per band for LSH configuration.
+
     ```bash
-    python main.py --mode bloom --input_file data/thirty.tsv
+    python main.py --mode lsh --input_file data/thirty.tsv --num_bands 20 --rows_per_band 5 --num_hashes 100 --shingle_size 5
     ```
 
-2. **Run LSH Deduplication**:
+2. **Improved LSH Deduplication**:
+   This optimized LSH method offers enhanced recall by using multiple probes. Set the number of additional probes using `--probes`.
+
     ```bash
-    python main.py --mode lsh --input_file data/thirty.tsv --bands 20 --rows 5
+    python main.py --mode improved_lsh --input_file data/thirty.tsv --num_bands 20 --rows_per_band 5 --num_hashes 100 --shingle_size 5 --probes 3
     ```
 
-3. **Run Multi-Probe LSH for Enhanced Recall**:
+3. **Union-Find Enhanced LSH Deduplication**:
+   This method combines LSH with the Union-Find algorithm to improve clustering of near-duplicate documents.
+
     ```bash
-    python main.py --mode multiprobe_lsh --input_file data/thirty.tsv --bands 20 --rows 5 --probes 3
+    python main.py --mode union_find_lsh --input_file data/thirty.tsv --num_bands 20 --rows_per_band 5 --num_hashes 100 --shingle_size 5
     ```
 
-These scripts will generate output in the `results/` directory, where each line represents a cluster of duplicate or near-duplicate documents detected by the algorithms.
+### Collection-Wide Deduplication with Bloom Filter and LSH
+
+To perform deduplication on an entire collection using a combination of Bloom Filter and LSH, use the following:
+
+```bash
+python main.py --mode dedup --input_file data/thirty.tsv --num_bands 10 --rows_per_band 5 --num_hashes 100
+```
+
+---
+
+### Notes on Output
+
+All deduplication results will be saved to the `results/` directory, with each line representing a cluster of duplicate or near-duplicate documents identified by the algorithms.
+
+The output filename is auto-generated based on the input file and deduplication algorithm, with a format like `results/30-lsh.txt` or `results/30-baseline-md5.txt`.
 
 ### Customizing Parameters
 

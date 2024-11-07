@@ -38,7 +38,7 @@ class AbstractLSH(ABC):
         pass
 
 
-class LSH(AbstractLSH):
+class LSHBase(AbstractLSH):
     """Locality Sensitive Hashing (LSH) for finding near-duplicate documents."""
 
     def __init__(
@@ -197,7 +197,7 @@ class UnionFind:
             self.rank[x] = 0
 
 
-class LSHWithUnionFind(LSH):
+class LSH(LSHBase):
     """LSH with Union-Find for clustering similar documents."""
 
     def __init__(

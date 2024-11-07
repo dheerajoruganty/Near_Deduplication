@@ -8,7 +8,7 @@ from near_dedup.baselines.baselines import (
     find_ngram_duplicates,
     find_jaccard_duplicates,
 )
-from near_dedup.lsh.lsh import LSH, LSHImproved, LSHWithUnionFind
+from near_dedup.lsh.lsh import LSH, LSHImproved
 
 # Configure logging
 logging.basicConfig(
@@ -184,20 +184,6 @@ def main():
             duplicates = find_jaccard_duplicates(documents, threshold=args.threshold)
             save_results(duplicates, output_file)
 
-    # Standard LSH Mode
-    elif args.mode == "lsh":
-        logging.info("Starting standard LSH deduplication.")
-        lsh = LSH(
-            num_bands=args.num_bands,
-            rows_per_band=args.rows_per_band,
-            num_hashes=args.num_hashes,
-            shingle_size=args.shingle_size,
-        )
-        for idx, doc in enumerate(documents):
-            lsh.add_document(idx, doc)
-        duplicates = lsh.find_candidates()
-        save_results(duplicates, output_file)
-
     # Improved LSH Mode
     elif args.mode == "improved_lsh":
         logging.info("Starting improved LSH deduplication.")
@@ -215,9 +201,9 @@ def main():
         save_results(formatted_clusters, output_file)
 
     # Union-Find LSH Mode
-    elif args.mode == "union_find_lsh":
+    elif args.mode == "lsh":
         logging.info("Starting Union-Find LSH deduplication.")
-        union_find_lsh = LSHWithUnionFind(
+        union_find_lsh = LSH(
             num_bands=args.num_bands,
             rows_per_band=args.rows_per_band,
             num_hashes=args.num_hashes,
