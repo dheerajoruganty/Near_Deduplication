@@ -42,20 +42,26 @@ This solution is useful for deduplication tasks where document similarities must
 
 ## Installation
 
+1. **Install Git LFS**:
+
+    ```bash
+    git lfs install
+    ```
+
 1. **Clone the Repository**:
     ```bash
     git clone https://github.com/DSAN6700-24Fall/assignment-2-five-guys.git
     cd assignment-2-five-guys
     ```
 
-2. **Set Up the Conda Environment**:
+1. **Set Up the Conda Environment**:
     Ensure that you have Conda installed, and create an environment with Python 3.10.
     ```bash
     conda create --name five-guys -y python=3.10 ipykernel
     conda activate five-guys
     ```
 
-3. **Install Dependencies**:
+1. **Install Dependencies**:
     Install the required dependencies.
     ```bash
     pip install -e .
