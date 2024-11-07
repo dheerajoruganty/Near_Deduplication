@@ -4,7 +4,7 @@
 import pytest
 from near_dedup.bloom_filter.bloom_filter import BloomFilter
 from near_dedup.baselines.baselines import find_exact_duplicates
-from near_dedup.lsh.lsh import LSHWithUnionFind, LSHImproved
+from near_dedup.lsh.lsh import LSH, LSHImproved
 import csv
 import io
 
@@ -146,7 +146,7 @@ sample_docs = load_documents_from_tsv(sample_tsv_data)
 
 def test_lsh_with_union_find():
     """Test LSH with Union-Find for clustering similar documents."""
-    lsh_union_find = LSHWithUnionFind(num_bands=10, rows_per_band=5, num_hashes=100)
+    lsh_union_find = LSH(num_bands=10, rows_per_band=5, num_hashes=100)
     for idx, doc in enumerate(sample_docs):
         lsh_union_find.add_document(idx, doc)
     clusters = lsh_union_find.cluster_candidates()
