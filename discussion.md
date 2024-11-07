@@ -56,9 +56,45 @@ Here is a plot showing the impact of varying the number of hash functions \( k \
 
 This analysis helped us fine-tune the Bloom filter, ultimately deciding on an optimal \( k \) value that minimized false positives without excessive memory usage.
 
+#### Worst-Case Scenario for LSH in Near Duplicate Detection
+
+### Overview
+Locality Sensitive Hashing (LSH) is a widely used algorithm for identifying similar items in large datasets, particularly effective in near duplicate detection for text. However, LSH can encounter worst-case scenarios that lead to high false positive rates, clustering non-duplicate items together due to overly similar hash signatures. This section explores what constitutes a worst-case scenario for LSH in near duplicate detection and provides examples.
+
+### What Constitutes a Worst-Case Scenario?
+The worst-case scenario for LSH in near duplicate detection typically arises under the following conditions:
+1. **Non-Duplicate Texts with Similar Hashes**: Texts that are not duplicates but have a high degree of lexical overlap or many shared shingles can generate similar or identical minhash signatures, leading LSH to misclassify them as duplicates.
+2. **False Positives from Shared Vocabulary or Structure**: Texts discussing the same topic or containing common phrases (e.g., news articles with shared terminology) can be mistakenly grouped due to high overlap in shingles, even if the core content is different.
+3. **Low Similarity Threshold**: When the LSH threshold is set too low, it increases the risk of clustering texts that are only superficially similar, resulting in more false positives.
+
+For instance, consider two texts that mention "meeting with the president" but differ in other details. Due to the high overlap of phrases like "meeting with senior officials" and "economic strategies," these texts may yield similar minhash signatures, resulting in an undesired clustering.
+
+### Example of a Worst-Case Scenario
+An example of a worst-case scenario includes two thematically related but non-duplicate texts:
+
+- **Text A**: "The president attended a meeting with senior officials to discuss the country's economic situation."
+- **Text B**: "In the meeting with senior officials, a discussion was held on economic strategies for the country led by the president."
+
+Although these texts have a common theme, they are not duplicates. However, LSH may classify them as duplicates due to their high overlap in vocabulary, creating a false positive in the clustering.
+
+### Experimental Illustration
+We conducted a small experiment to simulate this worst-case scenario by applying LSH to texts with minor variations:
+
+- **Text 1**: "The quick brown fox jumps over the lazy dog."
+- **Text 2**: "A quick brown fox jumps over the lazy dog quickly."
+- **Text 3**: "The quick brown fox leaped over a sleepy dog."
+- **Text 4**: "In the quick jump, the brown fox goes over the lazy dog."
+
+LSH clustered these texts together despite their distinct meanings, illustrating how high lexical overlap, even with minor variations, can lead to incorrect classifications. This is an example of a false positive caused by LSH’s reliance on shared shingles rather than true content duplication.
+
+### Implications
+These worst-case scenarios highlight the limitations of LSH in tasks requiring precise duplicate detection. High false positives in scenarios like the one above may require additional tuning of LSH parameters or post-processing steps to distinguish genuine duplicates from texts with high lexical overlap. Proper tuning of the number of bands and rows per band can help reduce false positives, but achieving a balance between false positives and computational efficiency remains a challenge.
+
+
 ### S-Curve Analysis for Locality Sensitive Hashing (LSH)
 
 In this project, we evaluated the performance of Locality Sensitive Hashing (LSH) by examining the probability of two items with a given similarity being placed in the same bucket across different configurations of bands \( b \) and rows \( r \) per band. The resulting S-curve plot provides insights into how varying these parameters affects the behavior of LSH in identifying similar items.
+
 
 ### Key Findings
 
@@ -84,9 +120,6 @@ This analysis highlights the trade-off between selectivity and recall in LSH con
 
 By tuning the \( b \) and \( r \) values, we can control the specificity of LSH for particular applications. The S-curve plot thus serves as a valuable tool for visualizing and adjusting LSH's sensitivity to similarity, balancing between capturing highly similar pairs and allowing broader matches.
 
-### Conclusion
-
-In conclusion, the S-curve analysis demonstrates the effectiveness of LSH in selectively identifying similar items based on the configuration of bands and rows. This enables practitioners to adjust LSH parameters to meet the specific needs of their application, achieving a tailored balance between precision and recall in similarity detection.
 
 
 ### c. Baseline Runtime and Results Summary
@@ -107,23 +140,25 @@ We began with an MD5-based baseline approach for exact duplicate detection, whic
 ### d. LSH Implementation Runtime and Results Summary
 We evaluated the LSH implementation using Union-Find clustering across datasets of varying sizes:
 
+
 | Dataset           | Number of Documents | Start Time           | End Time             | Total Time (minutes) | Documents Processed Per Minute |
 |-------------------|---------------------|----------------------|----------------------|-----------------------|---------------------------------|
 | `threehundred.tsv` | 289                 | 17:36:06             | 17:37:12             | 1.10                  | ~262                             |
 | `onek.tsv`         | 996                 | 17:37:12             | 17:40:59             | 3.78                  | ~263                             |
 | `tenk.tsv`         | 9,995               | 17:41:00             | 18:16:10             | 35.17                 | ~284                             |
-
-
+| `hundredk.tsv`     | 99,985              | 18:16:10             | 23:08:50             | 292.67               | ~282                             |
 
 
 ### Improved LSH Deduplication Performance Summary
 
+
 | Dataset           | Number of Documents | Start Time           | End Time             | Total Time (minutes) | Documents Processed Per Minute |
 |-------------------|---------------------|----------------------|----------------------|-----------------------|---------------------------------|
-| `threehundred.tsv` | 289                 | 13:48:53             | 13:49:59             | 1.10                  | ~262                             |
-| `onek.tsv`         | 996                 | 13:50:45             | 13:54:24             | 3.65                  | ~273                             |
-| `tenk.tsv`         | 9,995               | 13:55:15             | 14:30:27             | 35.20                 | ~284                             |
-| `hundredk.tsv`     | 99,985              | 16:01:11             | 21:42:50             | 341.65                | ~293                             |
+| `threehundred.tsv` | 289                 | 13:48:53             | 13:49:53             | 0.95                  | 305                             |
+| `onek.tsv`         | 996                 | 13:50:45             | 13:54:05             | 3.23                  | 308                             |
+| `tenk.tsv`         | 9,995               | 13:55:15             | 14:27:30             | 32.18                 | 311                             |
+| `hundredk.tsv`     | 99,985              | 16:01:11             | 21:17:30             | 322.77               | 310                             |
+
 
 
 ### Observations
