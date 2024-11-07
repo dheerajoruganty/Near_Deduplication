@@ -8,3 +8,4 @@ results/1000-baseline.txt filter=lfs diff=lfs merge=lfs -text
 results/10000-baseline.txt filter=lfs diff=lfs merge=lfs -text
 results/10000-union_find_lsh.txt filter=lfs diff=lfs merge=lfs -text
 results/1000-union_find_lsh.txt filter=lfs diff=lfs merge=lfs -text
+examples/randomnumbers.txt filter=lfs diff=lfs merge=lfs -text
