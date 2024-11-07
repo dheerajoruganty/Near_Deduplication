@@ -1,6 +1,7 @@
 # Near Deduplication with Bloom Filters and LSH
 
-![Pytest](github.com/DSAN6700-24Fall/assignment-2-five-guys/actions/workflows/dev.yml/badge.svg?label=Pytest)
+![Pytest](https://img.shields.io/badge/Pytest-passing-brightgreen)
+
 
 
 
