@@ -7,8 +7,6 @@ from near_dedup.baselines.baselines import (
     find_exact_duplicates,
     find_ngram_duplicates,
     find_jaccard_duplicates,
-    bloom_filter_duplicates,
-    lsh_duplicates,
 )
 from near_dedup.lsh.lsh import LSH, LSHImproved, LSHWithUnionFind
 
@@ -50,9 +48,7 @@ def save_results(clusters, output_file):
     """
     Save the deduplication clusters to an output file in the specified format.
     """
-    # Ensure results directory exists
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-
     with open(output_file, "w") as file:
         for cluster in clusters:
             sorted_cluster = sorted(cluster)  # Sort for consistent output
@@ -108,8 +104,8 @@ def main():
     parser.add_argument(
         "--baseline",
         type=str,
-        choices=["md5", "ngram", "jaccard", "bloom", "lsh"],
-        help="The baseline to run: 'md5', 'ngram', 'jaccard', 'bloom', or 'lsh'.",
+        choices=["md5", "ngram", "jaccard"],
+        help="The baseline to run: 'md5', 'ngram', or 'jaccard'",
     )
     parser.add_argument(
         "--n", type=int, default=3, help="N-gram size for n-gram baseline (default: 3)"
@@ -162,18 +158,29 @@ def main():
     # Generate output filename based on mode and dataset size
     output_file = generate_output_filename(args.input_file, args.mode)
 
-    # Initialize the DocumentDeduplicator with desired Bloom Filter and LSH parameters
-    deduplicator = DocumentDeduplicator(
-        bloom_filter_params=(1000, 0.01),
-        lsh_params=(args.num_bands, args.rows_per_band, args.num_hashes),
-    )
-
     # Deduplication Mode
     if args.mode == "dedup":
         logging.info("Starting collection deduplication.")
+        deduplicator = DocumentDeduplicator(
+            bloom_filter_params=(1000, 0.01),
+            lsh_params=(args.num_bands, args.rows_per_band, args.num_hashes),
+        )
         exact_duplicates, clusters = deduplicator.deduplicate_collection(documents)
         cluster_ids = [[doc_id for doc_id in cluster] for cluster in clusters]
         save_results(cluster_ids, output_file)
+
+    # Baseline Mode
+    elif args.mode == "baseline":
+        logging.info("Starting baseline deduplication.")
+        if args.baseline == "md5":
+            duplicates = find_exact_duplicates(documents)
+        elif args.baseline == "ngram":
+            duplicates = find_ngram_duplicates(
+                documents, n=args.n, threshold=args.threshold
+            )
+        elif args.baseline == "jaccard":
+            duplicates = find_jaccard_duplicates(documents, threshold=args.threshold)
+        save_results(duplicates, output_file)
 
     # Standard LSH Mode
     elif args.mode == "lsh":
@@ -201,13 +208,8 @@ def main():
         )
         for idx, doc in enumerate(documents):
             improved_lsh.add_document(idx, doc)
-
-        # Get clusters as a list of lists for saving
         clusters = improved_lsh.cluster_candidates()
-
-        # Convert clusters to the format needed by save_results
         formatted_clusters = [cluster for cluster in clusters.values()]
-
         save_results(formatted_clusters, output_file)
 
     # Union-Find LSH Mode

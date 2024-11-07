@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Baseline 1: Exact Duplicate Detection Using MD5 Hashing
 def compute_md5(document):
-    """Compute MD5 hash of a document string after cleaning."""
+    """Compute MD5 hash of an entire document string after cleaning."""
     cleaned_document = (
         document.strip().lower()
     )  # Strip whitespace and convert to lowercase
@@ -23,26 +23,25 @@ def compute_md5(document):
 
 
 def find_exact_duplicates(documents):
-    """Find exact duplicate documents based on MD5 hashing."""
+    """Find clusters of documents based on MD5 hashing."""
     seen_hashes = {}
-    duplicates = []
     logger.info("Starting exact duplicate detection using MD5 hashing.")
+
+    # Create clusters based on exact document content
     for idx, doc in enumerate(documents):
         md5_hash = compute_md5(doc)
         if md5_hash in seen_hashes:
-            duplicates.append((seen_hashes[md5_hash], idx))
-            logger.debug(
-                f"Duplicate found: Document {idx} is a duplicate of Document {seen_hashes[md5_hash]}."
-            )
+            # Add this document ID to the existing cluster
+            seen_hashes[md5_hash].append(idx)
         else:
-            seen_hashes[md5_hash] = idx
-    logger.info(
-        f"Exact duplicate detection complete. Found {len(duplicates)} duplicate pairs."
-    )
-    return duplicates
+            # Initialize a new cluster for this unique content
+            seen_hashes[md5_hash] = [idx]
 
+    # Return all clusters, including those with single entries
+    clusters = list(seen_hashes.values())
 
-from nltk.tokenize import word_tokenize
+    logger.info(f"Exact duplicate clustering complete. Found {len(clusters)} clusters.")
+    return clusters
 
 
 def tokenize_ngrams(document, n=3):
@@ -128,53 +127,5 @@ def find_jaccard_duplicates(documents, threshold=0.7):
                 )
     logger.info(
         f"Jaccard duplicate detection complete. Found {len(duplicates)} duplicate pairs."
-    )
-    return duplicates
-
-
-# Baseline 4: Bloom Filter Duplicate Detection
-def bloom_filter_duplicates(documents, num_elements=1000, false_positive_rate=0.01):
-    """
-    Detect duplicates in a document list using Bloom Filter.
-    """
-    bloom_filter = BloomFilter(num_elements, false_positive_rate)
-    duplicates = []
-    logger.info("Starting Bloom Filter duplicate detection.")
-    for idx, doc in enumerate(documents):
-        if bloom_filter.contains(doc):
-            duplicates.append(idx)
-            logger.debug(f"Bloom Filter duplicate found for Document {idx}.")
-        else:
-            bloom_filter.add(doc)
-    logger.info(
-        f"Bloom Filter duplicate detection complete. Found {len(duplicates)} duplicate entries."
-    )
-    return duplicates
-
-
-# Baseline 5: LSH Duplicate Detection
-def lsh_duplicates(documents, num_bands=10, rows_per_band=5, num_hashes=100):
-    """
-    Detect duplicates in a document list using LSH.
-    """
-    lsh = LSH(num_bands, rows_per_band, num_hashes)
-    duplicates = []
-    logger.info("Starting LSH duplicate detection.")
-
-    # Add each document to the LSH structure
-    for idx, doc in enumerate(documents):
-        lsh.add_document(idx, doc)
-
-    # Find candidate duplicate pairs
-    candidates = lsh.find_candidates()
-    for doc1, doc2 in candidates:
-        if doc1 != doc2:
-            duplicates.append((doc1, doc2))
-            logger.debug(
-                f"LSH candidate pair found: Document {doc1} and Document {doc2}."
-            )
-
-    logger.info(
-        f"LSH duplicate detection complete. Found {len(duplicates)} candidate pairs."
     )
     return duplicates
