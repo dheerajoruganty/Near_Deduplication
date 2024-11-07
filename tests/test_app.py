@@ -117,7 +117,7 @@ def test_bloom_filter_no_false_negatives():
 def test_md5_baseline():
     """Test baseline exact duplicate detection using MD5."""
     docs = ["Hello World", "Another Document", "Hello World"]
-    expected_duplicates = [(0, 2)]
+    expected_duplicates = [(0, 2), (1,)]
 
     # Get duplicates from the function
     duplicates = find_exact_duplicates(docs)

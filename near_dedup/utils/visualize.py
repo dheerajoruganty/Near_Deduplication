@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from near_dedup.lsh.lsh import LSH, LSHImproved, LSHWithUnionFind # Import the class
+from near_dedup.lsh.lsh import LSH, LSHImproved # Import the class
 
 # Define a range of similarities and multiple (b, r) configurations
 similarities = np.linspace(0, 1, 100)  # Similarity values from 0 to 1
