@@ -156,8 +156,41 @@ All output files are saved in the `results/` directory. The naming convention fo
 123 456 789 # Documents 123, 456, and 789 are near-duplicates 101 202 303 ...
 ```
 
+## Documentation:
 
-This directory structure ensures that all results are easily accessible and organized for analysis.
+This project includes a `gh-pages` branch for documentation, though it is not currently set up to be hosted on GitHub Pages. If you would like to view the documentation locally, follow the steps below.
+
+## Building Documentation Locally
+
+To build and view the documentation on your local machine:
+
+1. **Navigate to the `docs` directory**:
+   ```bash
+   cd docs
+   ```
+
+2. **Install dependencies**:
+   Make sure you have Sphinx and any necessary extensions installed:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Build the documentation**:
+   Generate the HTML files by running:
+   ```bash
+   make html
+   ```
+
+4. **View the documentation**:
+   Open the generated HTML files in a browser. The main entry point is:
+   ```
+   docs/build/html/index.html
+   ```
+
+## Note on the `gh-pages` Branch
+
+The `gh-pages` branch is available in this repository for potential future hosting of documentation but is not actively being used to serve documentation online at this time.
+
 
 ## Contributors
 
