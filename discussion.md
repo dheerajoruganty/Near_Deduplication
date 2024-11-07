@@ -95,6 +95,8 @@ These worst-case scenarios highlight the limitations of LSH in tasks requiring p
 
 In this project, we evaluated the performance of Locality Sensitive Hashing (LSH) by examining the probability of two items with a given similarity being placed in the same bucket across different configurations of bands \( b \) and rows \( r \) per band. The resulting S-curve plot provides insights into how varying these parameters affects the behavior of LSH in identifying similar items.
 
+![S Curve LSH Multiple](./S Curve LSH Multiple.png)
+
 
 ### Key Findings
 
